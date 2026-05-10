@@ -3,12 +3,15 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 
-
-# ১. মডেল লোড করা
+# ১. মডেল লোড করা (এরর হ্যান্ডলিং সহ)
 @st.cache_resource
 def load_my_model():
-    return tf.keras.models.load_model('fabric_defect_model.keras')
-
+    try:
+        # সরাসরি .keras ফাইল লোড করার চেষ্টা
+        return tf.keras.models.load_model('fabric_defect_model.keras', compile=False)
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None
 
 model = load_my_model()
 class_names = ['crazing', 'inclusion', 'patches', 'pitted_surface', 'rolled-in_scale', 'scratches']
@@ -19,7 +22,7 @@ st.write("ছবি আপলোড করুন এবং দেখুন স�
 # ২. ফাইল আপলোডার
 uploaded_file = st.file_uploader("একটি ছবি সিলেক্ট করুন...", type=["jpg", "png", "jpeg"])
 
-if uploaded_file is not None:
+if uploaded_file is not None and model is not None:
     # ছবি দেখানো
     image = Image.open(uploaded_file)
     st.image(image, caption='আপলোড করা ছবি', use_column_width=True)
